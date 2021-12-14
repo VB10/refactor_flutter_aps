@@ -1,14 +1,21 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:provider/provider.dart';
-import 'package:refactor_flutter_aps/add/ogrenci_provider.dart';
-import 'package:refactor_flutter_aps/add/student_ekle_view.dart';
-import 'package:refactor_flutter_aps/provider/user_context.dart';
+import 'package:refactor_flutter_aps/core/enums/database_enums.dart';
+import 'package:refactor_flutter_aps/core/manager/database/database_manager_interface.dart';
+import 'package:refactor_flutter_aps/core/manager/database/shared_manager.dart';
+import 'package:refactor_flutter_aps/feature/home/view_model/home_view_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import 'model.dart';
+import '../../../core/manager/network/network_manager.dart';
+import '../../../core/provider/user_context.dart';
+import '../../add_user/view/add_student_view.dart';
+import '../../add_user/view_model/student_view_model.dart';
+import '../model/home_model.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({Key? key}) : super(key: key);
@@ -18,47 +25,27 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
-  ResourceModel? resourceModel;
-  String? title;
-  bool isLoading = false;
-
-  Future<void> fetchItems() async {
-    setState(() {
-      isLoading = true;
-    });
-    final response = await Dio().get('https://reqres.in/api/unknown');
-
-    setState(() {
-      resourceModel = ResourceModel.fromJson(response.data);
-      isLoading = false;
-    });
-  }
-
-  Future<void> pageNumber() async {
-    final prefences = await SharedPreferences.getInstance();
-    if (resourceModel!.page! > 1) {
-      int x = resourceModel!.page!;
-      int y = context.read<UserContext>().user?.age ?? 0;
-      await prefences.setInt("name", x * y);
-      setState(() {
-        title = x.toString();
-      });
-    }
-
-    setState(() {
-      title = resourceModel!.support!.text;
-    });
-  }
-
+  late HomeViewModel _viewModel;
   @override
   void initState() {
     super.initState();
-    fetchItems();
+    _viewModel = HomeViewModel();
+    _viewModel.fetchItems();
   }
 
   @override
   Widget build(BuildContext context) {
+    return ChangeNotifierProvider<HomeViewModel>.value(
+      value: _viewModel,
+      child: Consumer<HomeViewModel>(builder: (context, value, child) => _bodyView(context)),
+    );
+  }
+
+  Scaffold _bodyView(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text(_viewModel.title ?? ''),
+      ),
       floatingActionButton: FloatingActionButton(
         child: Text('add'),
         onPressed: () {
@@ -78,7 +65,7 @@ class _HomeViewState extends State<HomeView> {
         padding: const EdgeInsets.all(8.0),
         child: ListView(
           children: [
-            ...resourceModel!.data!.map((e) {
+            ...(_viewModel.resourceModel?.data ?? []).map((e) {
               return Card(
                 child: ListTile(
                   leading: Container(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/src/provider.dart';
-import 'package:refactor_flutter_aps/add/ogrenci_provider.dart';
+
+import '../view_model/student_view_model.dart';
 
 class StudentAddView extends StatefulWidget {
   const StudentAddView({Key? key}) : super(key: key);
