@@ -1,0 +1,1 @@
+enum DatabaseEnums { key, home }

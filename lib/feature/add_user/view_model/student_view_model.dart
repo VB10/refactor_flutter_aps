@@ -1,7 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:refactor_flutter_aps/provider/user_context.dart';
+
+import '../../../core/provider/user_context.dart';
 
 class OgrenciProvider extends ChangeNotifier {
   String? title;
